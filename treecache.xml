@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- ===================================================================== -->
+<!--                                                                       -->
+<!--  Configuracion de JBoss Cache (TreeCache)							   -->	
+<!--                                                                       -->
+<!-- ===================================================================== -->
+<server>
+    <classpath codebase="./lib" archives="jboss-cache.jar, jgroups.jar"/>
+
+    <!-- ==================================================================== -->
+    <!-- Define la configuración de TreeCache -->
+    <!-- ==================================================================== -->
+
+    <mbean code="org.jboss.cache.TreeCache" name="jboss.cache:service=TreeCache">
+
+        <depends>jboss:service=Naming</depends>
+        <depends>jboss:service=TransactionManager</depends>
+
+        <!-- Configuración del manejador de la transacción -->
+        <attribute name="TransactionManagerLookupClass">org.jboss.cache.JBossTransactionManagerLookup</attribute>
+
+        <!-- Configuración del nivel de isolación de la caché -->
+        <attribute name="IsolationLevel">REPEATABLE_READ</attribute>
+
+	    <!-- Configuración del modo de operación de la caché -->      
+        <attribute name="CacheMode">LOCAL</attribute>
+
+        <!-- Indica si se utiliza una cola para la replicación en modo asíncrono -->
+        <attribute name="UseReplQueue">false</attribute>
+
+        <!-- El intervalo en ms de replicación en modo asíncrono -->
+        <attribute name="ReplQueueInterval">0</attribute>
+
+        <!-- El número máximo de elementos cambiados que pueden iniciar una replicación.-->
+	    <!-- El número 0 significa infinito. -->
+        <attribute name="ReplQueueMaxElements">0</attribute>
+
+        <!-- El nombre del cluster que verá TreeCache para hacer la replicación de cache. -->
+	 	<!-- Puede ser el que se desee desde que sea el mismo para todas las copias de la aplicación desplegada en el cluster. -->
+        <attribute name="ClusterName">Heimdall-Cluster</attribute>
+       
+        <!-- La configuración de Jgroups. -->
+        <attribute name="ClusterConfig">
+            <config>
+               <UDP mcast_addr="228.1.2.3" mcast_port="48866"
+                    ip_ttl="64" ip_mcast="true" 
+                    mcast_send_buf_size="150000" mcast_recv_buf_size="80000"
+                    ucast_send_buf_size="150000" ucast_recv_buf_size="80000"
+                    loopback="false"/>
+                <PING timeout="2000" num_initial_members="3"
+                    up_thread="false" down_thread="false"/>
+                <MERGE2 min_interval="10000" max_interval="20000"/>                
+                <FD_SOCK/>
+                <VERIFY_SUSPECT timeout="1500"
+                    up_thread="false" down_thread="false"/>
+                <pbcast.NAKACK gc_lag="50" retransmit_timeout="600,1200,2400,4800"
+                    max_xmit_size="8192" up_thread="false" down_thread="false"/>
+                <UNICAST timeout="600,1200,2400" window_size="100" min_threshold="10"
+                    down_thread="false"/>
+                <pbcast.STABLE desired_avg_gossip="20000"
+                    up_thread="false" down_thread="false"/>
+                <FRAG frag_size="8192"
+                    down_thread="false" up_thread="false"/>
+                <pbcast.GMS join_timeout="5000" join_retry_timeout="2000"
+                    shun="true" print_local_addr="true"/>
+                <pbcast.STATE_TRANSFER up_thread="true" down_thread="true"/>
+            </config>
+        </attribute>
+        
+        <attribute name="InitialStateRetrievalTimeout">20000</attribute>        
+        <attribute name="SyncReplTimeout">20000</attribute>
+        <attribute name="LockAcquisitionTimeout">15000</attribute>
+
+        <!-- Nombre de la política de expropiación de la caché. No está soportado para esta versión de TreeCache -->
+        <attribute name="EvictionPolicyClass"></attribute>
+	 
+
+	    <!-- Indica si se lee la caché cuando un nodo se agrega al cluster. -->
+        <attribute name="FetchInMemoryState">true</attribute>
+       
+
+		<!-- Indica uso de serialización en el uso del classloader. -->
+        
+        <!-- Deshabilitado para JBoss 5, funciona para JBoss 4-->
+        <!--<attribute name="UseMarshalling">false</attribute>-->
+        
+        <attribute name="UseRegionBasedMarshalling">true</attribute>               
+    </mbean>
+</server>
